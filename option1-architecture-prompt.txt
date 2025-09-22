@@ -1,0 +1,96 @@
+# Option 1 Architecture Diagram Prompt - HuggingFace Spaces + Kafka
+
+## VISUAL ARCHITECTURE DIAGRAM PROMPT
+
+Create a detailed architectural diagram for "Option 1: HuggingFace Spaces + Kafka (Free Tier)" with the following specifications:
+
+### MAIN COMPONENTS (Left to Right Flow):
+
+1. **User Request Layer**
+   - Game Client (Web/Mobile)
+   - Crafterse Backend API
+   - Request Validation & Authentication
+
+2. **Queue & Routing Layer**
+   - Apache Kafka Queue System
+   - Request Distribution
+   - Load Balancing
+
+3. **AI Processing Layer**
+   - HuggingFace Spaces (3x instances)
+   - Stable Diffusion XL (CPU-based)
+   - Model Loading & Inference
+   - Local Processing Queue
+
+4. **Caching & Storage Layer**
+   - Redis Cache (30MB limit)
+   - Generated Asset Storage
+   - HuggingFace Storage Integration
+
+5. **Delivery Layer**
+   - CloudFlare R2 Storage
+   - CloudFlare CDN (Free Tier)
+   - Global Asset Distribution
+
+### VISUAL ELEMENTS TO INCLUDE:
+
+**🎨 Color Scheme:**
+- Processing layer: Green (#27ae60) - Free tier
+- Queue system: Orange (#f39c12) - Kafka routing
+- Storage/CDN: Blue (#3498db) - CloudFlare
+- Cache layer: Purple (#9b59b6) - Redis
+- User layer: Gray (#95a5a6) - Standard components
+
+**📊 Component Details:**
+- **HuggingFace Spaces:** "3x Free Tier, 16GB RAM, 2vCPU each"
+- **Kafka Queue:** "Request routing, 100 topics, 100 partitions"
+- **Redis Cache:** "30MB limit, 10K operations/day free tier"
+- **Storage:** "CloudFlare R2, $0.015/GB, 100K requests free"
+- **CDN:** "CloudFlare Free Tier, 100GB bandwidth"
+
+**🔄 Data Flow:**
+1. User submits weapon generation prompt via game UI
+2. Crafterse Backend validates request and authentication
+3. Request forwarded to Kafka queue for processing
+4. Kafka distributes to available HuggingFace Spaces
+5. Stable Diffusion XL generates image on CPU
+6. Generated asset cached in Redis for reuse
+7. Asset uploaded to CloudFlare R2 storage
+8. CDN delivers globally via CloudFlare edge network
+9. URL returned to user through backend
+
+**📈 Performance Metrics:**
+- Generation Speed: 45-120s (includes cold start)
+- Throughput: 30-60 images/hour per Space
+- Multi-Space: 100-200 images/hour total
+- Cold Start: 30-60s penalty
+- Cache Hit Rate: 40-60%
+- Cost: $0.15/month
+- Uptime: 95-98%
+
+**⚠️ Limitations to Highlight:**
+- CPU-only inference (no GPU acceleration)
+- 60-second cold start delays
+- 100 requests/hour rate limit per Space
+- 16GB RAM constraint per Space
+- Shared CPU resources
+
+**🎯 Key Benefits to Highlight:**
+- ✅ Completely free for MVP development
+- ✅ Rapid deployment (3-5 days)
+- ✅ No infrastructure management
+- ✅ Built-in model management
+- ✅ Global CDN delivery
+- ✅ Easy scaling (add more Spaces)
+
+### STYLE REQUIREMENTS:
+- Clean, professional design
+- Clear data flow arrows with numbers
+- Component specifications clearly visible
+- Performance metrics displayed
+- Limitations clearly marked with warning icons
+- Color-coded by component type
+- Easy to understand for development teams
+
+### OUTPUT FORMAT:
+PNG/SVG diagram suitable for technical documentation, with clear labels and professional appearance showing the complete free-tier architecture flow.

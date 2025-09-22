@@ -1,0 +1,82 @@
+# Hybrid Architecture Diagram Prompt - Option 4
+
+## VISUAL ARCHITECTURE DIAGRAM PROMPT
+
+Create a detailed architectural diagram for "Option 4: Hybrid Image Generation Service" with the following specifications:
+
+### MAIN COMPONENTS (Left to Right Flow):
+
+1. **User Request Layer**
+   - Game Client (Web/Mobile)
+   - Load Balancer
+   - Crafterse Backend API
+
+2. **Intelligent Routing Layer**
+   - Kafka Queue System
+   - Intelligent Router (Queue Depth Detection)
+   - Routing Decision Logic
+
+3. **Primary Processing Path**
+   - HuggingFace Spaces (2x instances)
+   - Stable Diffusion XL (CPU-based)
+   - Local caching layer
+
+4. **Fallback Processing Path**
+   - Replicate API Gateway
+   - GPU-accelerated inference
+   - Multi-level caching
+
+5. **Storage & Delivery Layer**
+   - Redis Multi-level Cache
+   - CloudFlare R2 Storage
+   - CloudFlare CDN
+
+### VISUAL ELEMENTS TO INCLUDE:
+
+**🎨 Color Scheme:**
+- Primary path: Green (#27ae60)
+- Fallback path: Blue (#3498db)
+- Shared components: Gray (#95a5a6)
+- Routing: Orange (#f39c12)
+
+**📊 Component Details:**
+- **HuggingFace Spaces:** "2x Free Tier, 16GB RAM, CPU-based"
+- **Kafka Router:** "Queue depth < 50: Route to Spaces, > 50: Route to API"
+- **Replicate API:** "GPU acceleration, $0.0023/image"
+- **Cache Layer:** "Redis + In-Memory, 60% hit rate"
+- **CDN:** "CloudFlare Free Tier, 100GB bandwidth"
+
+**🔄 Data Flow:**
+1. User submits weapon generation prompt
+2. Backend validates and forwards to Kafka
+3. Router checks queue depth
+4. Route to Spaces (normal load) or API (peak load)
+5. Generate image with appropriate backend
+6. Cache result in Redis
+7. Store in R2, deliver via CDN
+8. Return URL to user
+
+**📈 Performance Metrics:**
+- Normal Load: 200-500 images/hour
+- Peak Load: 1,000+ images/hour
+- Generation Time: 20-60 seconds
+- Cost: $55/month
+- Uptime: 99.0%
+
+**🎯 Key Benefits to Highlight:**
+- ✅ Best of both worlds (cost + performance)
+- ✅ Intelligent load balancing
+- ✅ Automatic failover
+- ✅ Cost optimization
+- ✅ Scalable architecture
+
+### STYLE REQUIREMENTS:
+- Clean, modern design
+- Clear data flow arrows
+- Component specifications visible
+- Cost and performance metrics displayed
+- Professional color scheme
+- Easy to understand for technical and non-technical audiences
+
+### OUTPUT FORMAT:
+PNG/SVG diagram suitable for inclusion in technical documentation, with clear labels and professional appearance.

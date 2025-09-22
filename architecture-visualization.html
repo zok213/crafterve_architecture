@@ -1,0 +1,1932 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Architecture Decision Document - Crafterse Image Generation Service</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        nav {
+            background-color: #2c3e50;
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        nav li {
+            margin: 0 1rem;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        nav a:hover {
+            background-color: rgba(255,255,255,0.1);
+        }
+
+        .section {
+            padding: 2rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .section h2 {
+            color: #2c3e50;
+            margin-bottom: 1rem;
+            font-size: 1.8rem;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 0.5rem;
+        }
+
+        .section h3 {
+            color: #34495e;
+            margin: 1.5rem 0 0.5rem 0;
+            font-size: 1.4rem;
+        }
+
+        .architecture-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        @media (max-width: 768px) {
+            .architecture-grid {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto;
+            }
+        }
+
+        .architecture-card {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .architecture-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+
+        .architecture-card.best-for {
+            border-left: 5px solid #27ae60;
+        }
+
+        .architecture-card h4 {
+            color: #2c3e50;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .cost-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+
+        .cost-free {
+            background-color: #27ae60;
+            color: white;
+        }
+
+        .cost-low {
+            background-color: #3498db;
+            color: white;
+        }
+
+        .cost-medium {
+            background-color: #f39c12;
+            color: white;
+        }
+
+        .cost-high {
+            background-color: #e74c3c;
+            color: white;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        .comparison-table th {
+            background-color: #34495e;
+            color: white;
+            font-weight: 600;
+        }
+
+        .comparison-table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        .comparison-table tr:hover {
+            background-color: #e8f4f8;
+        }
+
+        .performance-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            grid-template-rows: auto auto auto auto;
+            gap: 2rem;
+            margin: 1.5rem 0;
+            max-width: 100%;
+        }
+
+        .performance-card {
+            background: #f8f9fa;
+            border-left: 4px solid #3498db;
+            padding: 1rem;
+            border-radius: 4px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .performance-card h5 {
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+
+        .performance-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .performance-table th,
+        .performance-table td {
+            padding: 0.5rem;
+            text-align: center;
+            border: 1px solid #dee2e6;
+            vertical-align: middle;
+            min-width: 120px;
+        }
+
+        .performance-table th {
+            background-color: #343a40;
+            color: white;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .performance-table .metric-row {
+            background-color: #f8f9fa;
+        }
+
+        .performance-table .metric-row:first-child {
+            font-weight: bold;
+            background-color: #e9ecef;
+        }
+
+        .performance-value {
+            font-size: 1.1rem;
+            font-weight: bold;
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+
+        .performance-label {
+            font-size: 0.75rem;
+            color: #6c757d;
+            display: block;
+            line-height: 1.2;
+        }
+
+        .performance-table .performance-value {
+            margin-bottom: 0.15rem;
+        }
+
+        .performance-table .performance-label {
+            margin-bottom: 0;
+            font-size: 0.7rem;
+        }
+
+        .performance-good { color: #28a745; }
+        .performance-moderate { color: #ffc107; }
+        .performance-poor { color: #dc3545; }
+        .performance-na { color: #6c757d; }
+
+        .performance-card h5 {
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+
+        .code-block {
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            padding: 1rem;
+            border-radius: 6px;
+            margin: 1rem 0;
+            overflow-x: auto;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.9rem;
+        }
+
+        .diagram {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .diagram pre {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 0.9rem;
+        }
+
+        .risk-matrix {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+            gap: 0.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .risk-header {
+            background-color: #34495e;
+            color: white;
+            padding: 0.5rem;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .risk-cell {
+            padding: 0.5rem;
+            text-align: center;
+            border: 1px solid #ddd;
+            font-size: 0.8rem;
+        }
+
+        .risk-high {
+            background-color: #e74c3c;
+            color: white;
+        }
+
+        .risk-medium {
+            background-color: #f39c12;
+            color: white;
+        }
+
+        .risk-low {
+            background-color: #27ae60;
+            color: white;
+        }
+
+        .migration-timeline {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .timeline-item {
+            display: flex;
+            margin-bottom: 1rem;
+            padding: 0.5rem 0;
+        }
+
+        .timeline-marker {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: #3498db;
+            margin-right: 1rem;
+            margin-top: 0.2rem;
+        }
+
+        .timeline-content h4 {
+            color: #2c3e50;
+            margin-bottom: 0.25rem;
+        }
+
+        .timeline-content p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .feature-matrix {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+            gap: 0.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .feature-header {
+            background-color: #34495e;
+            color: white;
+            padding: 0.75rem;
+            text-align: center;
+            font-weight: bold;
+            border-radius: 4px 4px 0 0;
+        }
+
+        .feature-row {
+            display: contents;
+        }
+
+        .feature-cell {
+            background-color: #f8f9fa;
+            padding: 0.5rem;
+            text-align: center;
+            border-bottom: 1px solid #ddd;
+            font-size: 0.8rem;
+        }
+
+        .feature-supported {
+            background-color: #27ae60;
+            color: white;
+        }
+
+        .feature-partial {
+            background-color: #f39c12;
+            color: white;
+        }
+
+        .feature-unsupported {
+            background-color: #95a5a6;
+            color: white;
+        }
+
+        .decision-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+            text-align: center;
+        }
+
+        .decision-box h3 {
+            margin-bottom: 1rem;
+        }
+
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .metric-card {
+            background: rgba(255,255,255,0.1);
+            padding: 1rem;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin: 0.25rem 0;
+        }
+
+        .roadmap {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .phase-timeline {
+            position: relative;
+            padding: 1rem 0;
+        }
+
+        .phase-timeline::before {
+            content: '';
+            position: absolute;
+            left: 20px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background-color: #3498db;
+        }
+
+        .phase-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .phase-marker {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #3498db;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 1rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .phase-content h4 {
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+
+        .phase-tasks {
+            list-style: none;
+            margin-top: 0.5rem;
+        }
+
+        .phase-tasks li {
+            padding: 0.25rem 0;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .phase-tasks li::before {
+            content: '✓';
+            margin-right: 0.5rem;
+            color: #27ae60;
+        }
+
+        @media (max-width: 768px) {
+            .architecture-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .comparison-table {
+                font-size: 0.8rem;
+            }
+
+            .comparison-table th,
+            .comparison-table td {
+                padding: 0.5rem;
+            }
+
+            nav ul {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            nav li {
+                margin: 0.25rem 0;
+            }
+
+            .performance-grid {
+                grid-template-rows: auto;
+                gap: 1.5rem;
+            }
+
+            .performance-table {
+                font-size: 0.8rem;
+            }
+
+            .performance-table th,
+            .performance-table td {
+                padding: 0.3rem;
+            }
+        }
+
+        .highlight {
+            background-color: #fff3cd;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            border-left: 3px solid #ffc107;
+        }
+
+        .success {
+            background-color: #d4edda;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            border-left: 3px solid #28a745;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏗️ Architecture Decision Document</h1>
+            <div class="subtitle">Crafterse Image Generation Service</div>
+            <p style="margin-top: 1rem; opacity: 0.9;">Comprehensive analysis and visualization of architecture options for AI-powered image generation</p>
+        </div>
+
+        <nav>
+            <ul>
+                <li><a href="#executive">Executive Summary</a></li>
+                <li><a href="#overview">Architecture Overview</a></li>
+                <li><a href="#comparison">Detailed Comparison</a></li>
+                <li><a href="#performance">Performance Analysis</a></li>
+                <li><a href="#costs">Cost Analysis</a></li>
+                <li><a href="#risks">Risk Assessment</a></li>
+                <li><a href="#migration">Migration Strategy</a></li>
+                <li><a href="#recommendations">Recommendations</a></li>
+                <li><a href="#technical">Technical Details</a></li>
+            </ul>
+        </nav>
+
+        <div class="section" id="executive">
+            <h2>📋 Executive Summary</h2>
+            <div class="decision-box">
+                <h3>🏆 RECOMMENDED ARCHITECTURE</h3>
+                <div class="metric-grid">
+                    <div class="metric-card">
+                        <div class="metric-value">Option 1</div>
+                        <div>HuggingFace Spaces + Kafka</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">$0</div>
+                        <div>Monthly Cost</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">3-5 days</div>
+                        <div>Deployment Time</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">5-10</div>
+                        <div>Concurrent Users</div>
+                    </div>
+                </div>
+            </div>
+
+            <p>This document provides a comprehensive analysis of 4 architecture options for deploying Crafterse's image generation service, focusing on Stable Diffusion XL/Flux integration with Kafka routing and Redis caching.</p>
+
+            <h3>🎯 Key Decision Criteria</h3>
+            <ul>
+                <li><strong>Phase 1 Priority:</strong> <span class="highlight">Cost = $0, Time to Deploy = 3-5 days, User Load = 5-10 concurrent users</span></li>
+                <li><strong>Core Requirements:</strong> Stable Diffusion XL/Flux integration, Kafka request routing, Redis asset caching, CloudFlare R2 storage</li>
+                <li><strong>Technical Constraints:</strong> CPU-only inference, 16GB RAM limit, 100 requests/hour rate limit per Space</li>
+            </ul>
+        </div>
+
+        <div class="section" id="overview">
+            <h2>🏛️ Architecture Options Overview</h2>
+
+            <div class="architecture-grid">
+                <div class="architecture-card best-for">
+                    <div class="cost-badge cost-free">Option 1: FREE TIER</div>
+                    <h4>🤗 HuggingFace Spaces + Kafka</h4>
+                    <p><strong>Best for:</strong> MVP/Phase 1 development (0-3 months)</p>
+                    <ul>
+                        <li>✅ Free HuggingFace Spaces (16GB RAM, 2vCPU, 30GB storage)</li>
+                        <li>✅ CompVis/stable-diffusion-xl-base-1.0 running on CPU</li>
+                        <li>✅ Apache Kafka for request routing and load balancing</li>
+                        <li>✅ Redis for generated asset caching (30MB limit)</li>
+                        <li>✅ HuggingFace storage + CloudFlare R2 for asset delivery</li>
+                        <li>✅ CloudFlare for global asset distribution</li>
+                        <li>⚠️ <strong>Limitations:</strong> CPU-only inference, 60s cold start, 100 req/hour limit</li>
+                    </ul>
+                </div>
+
+                <div class="architecture-card">
+                    <div class="cost-badge cost-low">Option 2: PRODUCTION</div>
+                    <h4>⚡ Replicate API + Managed Services</h4>
+                    <p><strong>Best for:</strong> Phase 2 expansion (3-12 months, 10-100 users)</p>
+                    <ul>
+                        <li>✅ Replicate API for GPU-accelerated model inference</li>
+                        <li>✅ AWS SQS for request queuing and processing</li>
+                        <li>✅ AWS ElastiCache (Redis) for asset caching</li>
+                        <li>✅ AWS S3 for asset storage with lifecycle policies</li>
+                        <li>✅ CloudFlare CDN for global asset delivery</li>
+                        <li>✅ AWS CloudWatch for performance tracking</li>
+                    <li>✅ <strong>Cost:</strong> $70-100/month (based on 30K images/month)</li>
+                    <li>✅ <strong>Advantages:</strong> GPU acceleration, 15-30s generation time, 99.9% uptime SLA</li>
+                    </ul>
+                </div>
+
+                <div class="architecture-card">
+                    <div class="cost-badge cost-low">Option 3: CUSTOM</div>
+                    <h4>☸️ Custom Kubernetes Deployment</h4>
+                    <p><strong>Best for:</strong> Phase 3 production (12+ months, 100+ users)</p>
+                    <ul>
+                        <li>✅ Self-managed Kubernetes cluster with GPU nodes</li>
+                        <li>✅ Custom Stable Diffusion deployment with optimizations</li>
+                        <li>✅ Apache Kafka cluster for high-throughput processing</li>
+                        <li>✅ Redis Cluster with persistence and replication</li>
+                        <li>✅ Multi-cloud storage with automated backup</li>
+                        <li>✅ Prometheus + Grafana stack with custom dashboards</li>
+                        <li>✅ GitHub Actions for automated deployments</li>
+                    <li>✅ <strong>Cost:</strong> $200-500/month (optimized for MVP)</li>
+                    <li>✅ <strong>Cost Optimizations:</strong> Cheaper GPU (g4dn vs p3.2xl), fewer nodes, free monitoring</li>
+                    <li>✅ <strong>Advantages:</strong> Full control, custom optimizations, auto-scaling</li>
+                    </ul>
+                </div>
+
+                <div class="architecture-card">
+                    <div class="cost-badge cost-low">Option 4: HYBRID</div>
+                    <h4>🔄 Hybrid Approach (Spaces + API Fallback)</h4>
+                    <p><strong>Best for:</strong> Transition periods and cost optimization</p>
+                    <ul>
+                        <li>✅ Primary: HuggingFace Spaces for low-traffic periods</li>
+                        <li>✅ Fallback: Replicate API for peak loads and GPU acceleration</li>
+                        <li>✅ Kafka with intelligent routing based on load</li>
+                        <li>✅ Multi-level caching (Redis + in-memory)</li>
+                        <li>✅ Hybrid storage strategy with failover</li>
+                        <li>✅ Custom routing logic based on queue depth</li>
+                        <li>✅ <strong>Cost:</strong> $35-55/month (2 Spaces + 15K API calls)</li>
+                        <li>✅ <strong>Advantages:</strong> Best of both worlds, cost optimization</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="section" id="comparison">
+            <h2>📊 Detailed Comparison Matrix</h2>
+
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>Criteria</th>
+                        <th>Option 1<br>HuggingFace</th>
+                        <th>Option 2<br>Replicate</th>
+                        <th>Option 3<br>Kubernetes</th>
+                        <th>Option 4<br>Hybrid</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Cost (Monthly)</strong></td>
+                        <td class="success"><strong>$0</strong></td>
+                        <td>$70-100</td>
+                        <td>$200-500</td>
+                        <td>$35-55</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Setup Time</strong></td>
+                        <td class="success"><strong>3-5 days</strong></td>
+                        <td>1-2 days</td>
+                        <td>2-4 weeks</td>
+                        <td>1 week</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Concurrent Users</strong></td>
+                        <td><strong>5-10</strong></td>
+                        <td>50-100</td>
+                        <td>200+</td>
+                        <td>25-50</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Generation Speed</strong></td>
+                        <td>45-120s</td>
+                        <td>15-30s</td>
+                        <td>10-25s</td>
+                        <td>20-60s</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Reliability (Uptime)</strong></td>
+                        <td>95-98%</td>
+                        <td>99.9%</td>
+                        <td>99.5%</td>
+                        <td>99.0%</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Scalability</strong></td>
+                        <td>Limited</td>
+                        <td>Good</td>
+                        <td>Excellent</td>
+                        <td>Good</td>
+                    </tr>
+                    <tr>
+                        <td><strong>GPU Support</strong></td>
+                        <td>None</td>
+                        <td>Yes</td>
+                        <td>Yes</td>
+                        <td>Partial</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Custom Models</strong></td>
+                        <td>Limited</td>
+                        <td>No</td>
+                        <td>Yes</td>
+                        <td>Partial</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Monitoring</strong></td>
+                        <td>Basic</td>
+                        <td>Good</td>
+                        <td>Excellent</td>
+                        <td>Good</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Maintenance</strong></td>
+                        <td>Low</td>
+                        <td>Very Low</td>
+                        <td>High</td>
+                        <td>Medium</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Security</strong></td>
+                        <td>Medium</td>
+                        <td>High</td>
+                        <td>High</td>
+                        <td>High</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Compliance</strong></td>
+                        <td>Basic</td>
+                        <td>SOC2</td>
+                        <td>SOC2/ISO27001</td>
+                        <td>SOC2</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="section" id="performance">
+            <h2>⚡ Performance Analysis</h2>
+
+            <div class="performance-grid">
+                <div class="performance-card">
+                    <h5>📈 Image Generation Speed (512x512)</h5>
+                    <table class="performance-table">
+                        <thead>
+                            <tr>
+                                <th>Component</th>
+                                <th>Option 1<br>HuggingFace</th>
+                                <th>Option 2<br>Replicate</th>
+                                <th>Option 3<br>Kubernetes</th>
+                                <th>Option 4<br>Hybrid</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="metric-row">
+                                <td><strong>Model Loading</strong></td>
+                                <td>
+                                    <div class="performance-value performance-poor">30-60s</div>
+                                    <div class="performance-label">(cold start penalty)</div>
+                                </td>
+                                <td>
+                                    <div class="performance-value performance-good">2-5s</div>
+                                    <div class="performance-label">(warm GPU instances)</div>
+                                </td>
+                                <td>
+                                    <div class="performance-value performance-good">1-2s</div>
+                                    <div class="performance-label">(persistent GPU pods)</div>
+                                </td>
+                                <td>
+                                    <div class="performance-value performance-moderate">2-30s</div>
+                                    <div class="performance-label">(depends on routing)</div>
+                                </td>
+                            </tr>
+                            <tr class="metric-row">
+                                <td><strong>Inference</strong></td>
+                                <td>
+                                    <div class="performance-value performance-poor">10-15s</div>
+                                    <div class="performance-label">(CPU-based generation)</div>
+                                </td>
+                                <td>
+                                    <div class="performance-value performance-good">8-12s</div>
+                                    <div class="performance-label">(GPU-accelerated)</div>
+                                </td>
+                                <td>
+                                    <div class="performance-value performance-good">5-8s</div>
+                                    <div class="performance-label">(optimized GPU workload)</div>
+                                </td>
+                                <td>
+                                    <div class="performance-value performance-moderate">8-15s</div>
+                                    <div class="performance-label">(routed to appropriate backend)</div>
+                                </td>
+                            </tr>
+                            <tr class="metric-row">
+                                <td><strong>Post-processing</strong></td>
+                                <td>
+                                    <div class="performance-value performance-good">5s</div>
+                                    <div class="performance-label">(PNG optimization + upload)</div>
+                                </td>
+                                <td>
+                                    <div class="performance-value performance-moderate">5-13s</div>
+                                    <div class="performance-label">(optimization + delivery)</div>
+                                </td>
+                                <td>
+                                    <div class="performance-value performance-moderate">4-15s</div>
+                                    <div class="performance-label">(batch processing + CDN)</div>
+                                </td>
+                                <td>
+                                    <div class="performance-value performance-good">5-10s</div>
+                                    <div class="performance-label">(optimized pipeline)</div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="performance-card">
+                    <h5>📊 Throughput Capacity (Images/Hour)</h5>
+                    <table class="performance-table">
+                        <thead>
+                            <tr>
+                                <th>Metric</th>
+                                <th>Option 1<br>HuggingFace</th>
+                                <th>Option 2<br>Replicate</th>
+                                <th>Option 3<br>Kubernetes</th>
+                                <th>Option 4<br>Hybrid</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="metric-row">
+                                <td><strong>Standard Load</strong></td>
+                                <td>
+                                    <div class="performance-value performance-poor">30-60</div>
+                                    <div class="performance-label">images/hour</div>
+                                </td>
+                                <td>
+                                    <div class="performance-value performance-good">1,000-2,000</div>
+                                    <div class="performance-label">images/hour</div>
+                                </td>
+                                <td>
+                                    <div class="performance-value performance-good">500-1,000</div>
+                                    <div class="performance-label">images/hour</div>
+                                </td>
+                                <td>
+                                    <div class="performance-value performance-moderate">200-500</div>
+                                    <div class="performance-label">images/hour</div>
+                                </td>
+                            </tr>
+                            <tr class="metric-row">
+                                <td><strong>Peak Load</strong></td>
+                                <td>
+                                    <div class="performance-value performance-poor">100-200</div>
+                                    <div class="performance-label">(3-5 Spaces)</div>
+                                </td>
+                                <td>
+                                    <div class="performance-value performance-good">5,000+</div>
+                                    <div class="performance-label">(Premium tier)</div>
+                                </td>
+                                <td>
+                                    <div class="performance-value performance-good">5,000+</div>
+                                    <div class="performance-label">(Multi-GPU cluster)</div>
+                                </td>
+                                <td>
+                                    <div class="performance-value performance-good">1,000+</div>
+                                    <div class="performance-label">images/hour</div>
+                                </td>
+                            </tr>
+                            <tr class="metric-row">
+                                <td><strong>Bottleneck</strong></td>
+                                <td>
+                                    <div class="performance-value performance-poor">CPU inference<br>+ rate limits</div>
+                                </td>
+                                <td>
+                                    <div class="performance-value performance-moderate">API rate limits<br>+ queue depth</div>
+                                </td>
+                                <td>
+                                    <div class="performance-value performance-moderate">GPU memory<br>+ storage I/O</div>
+                                </td>
+                                <td>
+                                    <div class="performance-value performance-moderate">Routing logic<br>+ fallback delays</div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="performance-card">
+                    <h5>⏱️ Latency Distribution (Real-World)</h5>
+                    <table class="performance-table">
+                        <thead>
+                            <tr>
+                                <th>Percentile</th>
+                                <th>Option 1<br>HuggingFace</th>
+                                <th>Option 2<br>Replicate</th>
+                                <th>Option 3<br>Kubernetes</th>
+                                <th>Option 4<br>Hybrid</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="metric-row">
+                                <td><strong>P50 (Median)</strong></td>
+                                <td>
+                                    <div class="performance-value performance-moderate">60s</div>
+                                    <div class="performance-label">(acceptable for MVP)</div>
+                                </td>
+                                <td>
+                                    <div class="performance-value performance-good">20s</div>
+                                    <div class="performance-label">(good user experience)</div>
+                                </td>
+                                <td>
+                                    <div class="performance-value performance-good">15s</div>
+                                    <div class="performance-label">(excellent performance)</div>
+                                </td>
+                                <td>
+                                    <div class="performance-value performance-moderate">25s</div>
+                                    <div class="performance-label">(good compromise)</div>
+                                </td>
+                            </tr>
+                            <tr class="metric-row">
+                                <td><strong>P95 (95th)</strong></td>
+                                <td>
+                                    <div class="performance-value performance-poor">120s</div>
+                                    <div class="performance-label">(users may abandon)</div>
+                                </td>
+                                <td>
+                                    <div class="performance-value performance-good">45s</div>
+                                    <div class="performance-label">(acceptable for most users)</div>
+                                </td>
+                                <td>
+                                    <div class="performance-value performance-good">30s</div>
+                                    <div class="performance-label">(good reliability)</div>
+                                </td>
+                                <td>
+                                    <div class="performance-value performance-moderate">40s</div>
+                                    <div class="performance-label">(reasonable fallback)</div>
+                                </td>
+                            </tr>
+                            <tr class="metric-row">
+                                <td><strong>P99 (99th)</strong></td>
+                                <td>
+                                    <div class="performance-value performance-poor">180s</div>
+                                    <div class="performance-label">(timeout issues)</div>
+                                </td>
+                                <td>
+                                    <div class="performance-value performance-moderate">60s</div>
+                                    <div class="performance-label">(rare delays)</div>
+                                </td>
+                                <td>
+                                    <div class="performance-value performance-good">45s</div>
+                                    <div class="performance-label">(consistent performance)</div>
+                                </td>
+                                <td>
+                                    <div class="performance-value performance-moderate">60s</div>
+                                    <div class="performance-label">(occasional spikes)</div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="performance-card">
+                    <h5>💾 Resource Utilization</h5>
+                    <table class="performance-table">
+                        <thead>
+                            <tr>
+                                <th>Resource</th>
+                                <th>Option 1<br>HuggingFace</th>
+                                <th>Option 2<br>Replicate</th>
+                                <th>Option 3<br>Kubernetes</th>
+                                <th>Option 4<br>Hybrid</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="metric-row">
+                                <td><strong>CPU Usage</strong></td>
+                                <td>
+                                    <div class="performance-value performance-poor">80-95%</div>
+                                    <div class="performance-label">(consistent high load)</div>
+                                </td>
+                                <td>
+                                    <div class="performance-value performance-na">N/A</div>
+                                    <div class="performance-label">(managed service)</div>
+                                </td>
+                                <td>
+                                    <div class="performance-value performance-good">8-16 cores</div>
+                                    <div class="performance-label">(across cluster)</div>
+                                </td>
+                                <td>
+                                    <div class="performance-value performance-moderate">Mixed</div>
+                                    <div class="performance-label">(depends on load)</div>
+                                </td>
+                            </tr>
+                            <tr class="metric-row">
+                                <td><strong>RAM Usage</strong></td>
+                                <td>
+                                    <div class="performance-value performance-poor">14-15GB/16GB</div>
+                                    <div class="performance-label">(near capacity)</div>
+                                </td>
+                                <td>
+                                    <div class="performance-value performance-na">N/A</div>
+                                    <div class="performance-label">(managed service)</div>
+                                </td>
+                                <td>
+                                    <div class="performance-value performance-good">16-32GB</div>
+                                    <div class="performance-label">(GPU memory)</div>
+                                </td>
+                                <td>
+                                    <div class="performance-value performance-moderate">Mixed</div>
+                                    <div class="performance-label">(depends on routing)</div>
+                                </td>
+                            </tr>
+                            <tr class="metric-row">
+                                <td><strong>Storage</strong></td>
+                                <td>
+                                    <div class="performance-value performance-good">25-30GB</div>
+                                    <div class="performance-label">(model + assets)</div>
+                                </td>
+                                <td>
+                                    <div class="performance-value performance-moderate">50-100GB/month</div>
+                                    <div class="performance-label">(asset storage)</div>
+                                </td>
+                                <td>
+                                    <div class="performance-value performance-good">1,000-5,000 IOPS</div>
+                                    <div class="performance-label">(SSD performance)</div>
+                                </td>
+                                <td>
+                                    <div class="performance-value performance-moderate">30-60GB/month</div>
+                                    <div class="performance-label">(dual storage)</div>
+                                </td>
+                            </tr>
+                            <tr class="metric-row">
+                                <td><strong>Network</strong></td>
+                                <td>
+                                    <div class="performance-value performance-moderate">100-200MB/hour</div>
+                                    <div class="performance-label">(image transfers)</div>
+                                </td>
+                                <td>
+                                    <div class="performance-value performance-moderate">500GB-1TB/month</div>
+                                    <div class="performance-label">(downloads)</div>
+                                </td>
+                                <td>
+                                    <div class="performance-value performance-good">1-10Gbps</div>
+                                    <div class="performance-label">(cluster communication)</div>
+                                </td>
+                                <td>
+                                    <div class="performance-value performance-moderate">Mixed</div>
+                                    <div class="performance-label">(depends on backend)</div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="section" id="costs">
+            <h2>💰 Cost Analysis Breakdown</h2>
+
+            <div class="architecture-grid">
+                <div class="architecture-card">
+                    <h4>💸 Option 1: HuggingFace Spaces (Free)</h4>
+                    <table class="comparison-table" style="margin: 0; box-shadow: none;">
+                        <thead>
+                            <tr>
+                                <th>Component</th>
+                                <th>Cost</th>
+                                <th>Usage</th>
+                                <th>Details</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>HuggingFace Spaces</td>
+                                <td>$0</td>
+                                <td>3 Spaces</td>
+                                <td>16GB RAM, 2vCPU each, unlimited runtime</td>
+                            </tr>
+                            <tr>
+                                <td>Kafka (Confluent Cloud)</td>
+                                <td>$0</td>
+                                <td>Basic</td>
+                                <td>1GB storage, 100 topics, 100 partitions</td>
+                            </tr>
+                            <tr>
+                                <td>Redis (Redis Labs)</td>
+                                <td>$0</td>
+                                <td>30MB</td>
+                                <td>Basic caching tier, 10K operations/day</td>
+                            </tr>
+                            <tr>
+                                <td>Storage (CloudFlare R2)</td>
+                                <td>$0.15</td>
+                                <td>10GB</td>
+                                <td>$0.015/GB/month, 100K requests free</td>
+                            </tr>
+                            <tr>
+                                <td>CDN (CloudFlare)</td>
+                                <td>$0</td>
+                                <td>100GB</td>
+                                <td>Free tier bandwidth, global edge network</td>
+                            </tr>
+                            <tr>
+                                <td>Monitoring (Grafana)</td>
+                                <td>$0</td>
+                                <td>Basic</td>
+                                <td>Community dashboards, basic alerting</td>
+                            </tr>
+                            <tr style="background-color: #e8f5e8; font-weight: bold;">
+                                <td><strong>TOTAL MONTHLY COST</strong></td>
+                                <td><strong>$0.15</strong></td>
+                                <td></td>
+                                <td><strong>97% savings vs paid options</strong></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="architecture-card">
+                    <h4>💳 Option 2: Replicate API (Production)</h4>
+                    <table class="comparison-table" style="margin: 0; box-shadow: none;">
+                        <thead>
+                            <tr>
+                                <th>Component</th>
+                                <th>Cost</th>
+                                <th>Usage</th>
+                                <th>Details</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Replicate API</td>
+                                <td>$69</td>
+                                <td>30K images</td>
+                                <td>$0.0023/image, GPU acceleration included</td>
+                            </tr>
+                            <tr>
+                                <td>Queue (AWS SQS)</td>
+                                <td>$0.10</td>
+                                <td>1M requests</td>
+                                <td>Free tier + $0.10/million requests</td>
+                            </tr>
+                            <tr>
+                                <td>Cache (ElastiCache)</td>
+                                <td>$15</td>
+                                <td>1GB cache</td>
+                                <td>t3.micro instance (free tier eligible)</td>
+                            </tr>
+                            <tr>
+                                <td>Storage (AWS S3)</td>
+                                <td>$7</td>
+                                <td>100GB</td>
+                                <td>Standard tier, 100K GET requests</td>
+                            </tr>
+                            <tr>
+                                <td>CDN (CloudFlare)</td>
+                                <td>$0</td>
+                                <td>100GB</td>
+                                <td>Free tier bandwidth, global edge network</td>
+                            </tr>
+                            <tr>
+                                <td>Monitoring (CloudWatch)</td>
+                                <td>$0</td>
+                                <td>Basic</td>
+                                <td>Free tier: 1M metrics, 100K alarms</td>
+                            </tr>
+                            <tr style="background-color: #e8f5e8; font-weight: bold;">
+                                <td><strong>TOTAL MONTHLY COST</strong></td>
+                                <td><strong>$91</strong></td>
+                                <td></td>
+                                <td><strong>Break-even at 39K images/month</strong></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="architecture-card">
+                    <h4>🏗️ Option 3: Kubernetes (Custom)</h4>
+                    <table class="comparison-table" style="margin: 0; box-shadow: none;">
+                        <thead>
+                            <tr>
+                                <th>Component</th>
+                                <th>Cost</th>
+                                <th>Usage</th>
+                                <th>Details</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>EKS Cluster</td>
+                                <td>$100</td>
+                                <td>2 nodes</td>
+                                <td>t3.medium x2, $0.05/hour each (down from 3)</td>
+                            </tr>
+                            <tr>
+                                <td>GPU Instance (g4dn.xlarge)</td>
+                                <td>$180</td>
+                                <td>1 GPU</td>
+                                <td>T4 GPU, 16GB memory, $0.526/hour (cheaper than p3.2xl)</td>
+                            </tr>
+                            <tr>
+                                <td>Kafka Cluster</td>
+                                <td>$30</td>
+                                <td>2 brokers</td>
+                                <td>t3.small x2, managed cluster (down from 3)</td>
+                            </tr>
+                            <tr>
+                                <td>Redis Cluster</td>
+                                <td>$75</td>
+                                <td>Single-AZ</td>
+                                <td>t3.small x2 instances, single-AZ deployment</td>
+                            </tr>
+                            <tr>
+                                <td>Storage (EBS gp3)</td>
+                                <td>$30</td>
+                                <td>100GB</td>
+                                <td>3,000 IOPS, 125MB/s (down from 500GB)</td>
+                            </tr>
+                            <tr>
+                                <td>Load Balancer (ALB)</td>
+                                <td>$20</td>
+                                <td>1 ALB</td>
+                                <td>100 rules, 50 target groups (same)</td>
+                            </tr>
+                            <tr>
+                                <td>Monitoring Stack</td>
+                                <td>$0</td>
+                                <td>Basic</td>
+                                <td>Use CloudWatch Container Insights (free tier)</td>
+                            </tr>
+                            <tr style="background-color: #e8f5e8; font-weight: bold;">
+                                <td><strong>TOTAL MONTHLY COST</strong></td>
+                                <td><strong>$435</strong></td>
+                                <td></td>
+                                <td><strong> Optimized for Production</strong></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+
+                <div class="architecture-card">
+                    <h4>🔄 Option 4: Hybrid (Optimized)</h4>
+                    <table class="comparison-table" style="margin: 0; box-shadow: none;">
+                        <thead>
+                            <tr>
+                                <th>Component</th>
+                                <th>Cost</th>
+                                <th>Usage</th>
+                                <th>Details</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>HuggingFace Spaces</td>
+                                <td>$0</td>
+                                <td>2 Spaces</td>
+                                <td>Primary for normal load</td>
+                            </tr>
+                            <tr>
+                                <td>Replicate API</td>
+                                <td>$35</td>
+                                <td>15K images</td>
+                                <td>Fallback for peak loads, $0.0023/image</td>
+                            </tr>
+                            <tr>
+                                <td>Kafka</td>
+                                <td>$0</td>
+                                <td>Basic</td>
+                                <td>Request routing, load balancing</td>
+                            </tr>
+                            <tr>
+                                <td>Redis</td>
+                                <td>$15</td>
+                                <td>1GB</td>
+                                <td>Multi-level caching</td>
+                            </tr>
+                            <tr>
+                                <td>Storage (R2 + S3)</td>
+                                <td>$5</td>
+                                <td>50GB</td>
+                                <td>Hybrid storage, failover support</td>
+                            </tr>
+                            <tr>
+                                <td>CDN</td>
+                                <td>$0</td>
+                                <td>100GB</td>
+                                <td>Free tier bandwidth, optimized delivery</td>
+                            </tr>
+                            <tr style="background-color: #e8f5e8; font-weight: bold;">
+                                <td><strong>TOTAL MONTHLY COST</strong></td>
+                                <td><strong>$55</strong></td>
+                                <td></td>
+                                <td><strong>Best value for variable loads</strong></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="section" id="risks">
+            <h2>⚠️ Risk Assessment Matrix</h2>
+
+            <h3>Technical Risks</h3>
+            <div class="risk-matrix">
+                <div class="risk-header">Risk</div>
+                <div class="risk-header">Option 1</div>
+                <div class="risk-header">Option 2</div>
+                <div class="risk-header">Option 3</div>
+                <div class="risk-header">Option 4</div>
+
+                <div class="risk-cell">Cold Start Delays</div>
+                <div class="risk-cell risk-high">High (30-60s)</div>
+                <div class="risk-cell risk-low">Low (2-5s)</div>
+                <div class="risk-cell risk-low">Low (1-2s)</div>
+                <div class="risk-cell risk-medium">Medium (2-30s)</div>
+
+                <div class="risk-cell">Rate Limiting</div>
+                <div class="risk-cell risk-high">High (100/hour)</div>
+                <div class="risk-cell risk-medium">Medium (1000/hour)</div>
+                <div class="risk-cell risk-low">Low (unlimited)</div>
+                <div class="risk-cell risk-medium">Medium (500/hour)</div>
+
+                <div class="risk-cell">Resource Contention</div>
+                <div class="risk-cell risk-high">High (shared CPU)</div>
+                <div class="risk-cell risk-low">Low (dedicated GPU)</div>
+                <div class="risk-cell risk-low">Low (managed)</div>
+                <div class="risk-cell risk-medium">Medium (mixed)</div>
+            </div>
+
+            <h3>Business Risks</h3>
+            <div class="risk-matrix">
+                <div class="risk-header">Risk</div>
+                <div class="risk-header">Option 1</div>
+                <div class="risk-header">Option 2</div>
+                <div class="risk-header">Option 3</div>
+                <div class="risk-header">Option 4</div>
+
+                <div class="risk-cell">Service Downtime</div>
+                <div class="risk-cell risk-medium">Medium (HF maintenance)</div>
+                <div class="risk-cell risk-low">Low (99.9% SLA)</div>
+                <div class="risk-cell risk-medium">Medium (self-managed)</div>
+                <div class="risk-cell risk-low">Low (redundant)</div>
+
+                <div class="risk-cell">Cost Overruns</div>
+                <div class="risk-cell risk-low">Low (free)</div>
+                <div class="risk-cell risk-medium">Medium (usage-based)</div>
+                <div class="risk-cell risk-high">High (infrastructure)</div>
+                <div class="risk-cell risk-medium">Medium (hybrid)</div>
+
+                <div class="risk-cell">Vendor Lock-in</div>
+                <div class="risk-cell risk-low">Low (multi-provider)</div>
+                <div class="risk-cell risk-high">High (Replicate)</div>
+                <div class="risk-cell risk-low">Low (open source)</div>
+                <div class="risk-cell risk-medium">Medium (mixed)</div>
+            </div>
+
+            <h3>Operational Risks</h3>
+            <div class="risk-matrix">
+                <div class="risk-header">Risk</div>
+                <div class="risk-header">Option 1</div>
+                <div class="risk-header">Option 2</div>
+                <div class="risk-header">Option 3</div>
+                <div class="risk-header">Option 4</div>
+
+                <div class="risk-cell">Deployment Complexity</div>
+                <div class="risk-cell risk-low">Low (click deploy)</div>
+                <div class="risk-cell risk-low">Very Low (API only)</div>
+                <div class="risk-cell risk-high">High (infrastructure)</div>
+                <div class="risk-cell risk-medium">Medium (dual setup)</div>
+
+                <div class="risk-cell">Monitoring Complexity</div>
+                <div class="risk-cell risk-medium">Medium (limited tools)</div>
+                <div class="risk-cell risk-low">Low (CloudWatch)</div>
+                <div class="risk-cell risk-high">High (custom stack)</div>
+                <div class="risk-cell risk-medium">Medium (dual monitoring)</div>
+            </div>
+        </div>
+
+        <div class="section" id="migration">
+            <h2>🔄 Migration Strategy</h2>
+
+            <div class="migration-timeline">
+                <h3>Phase 1 → Phase 2 Migration (HuggingFace → Replicate)</h3>
+                <div class="phase-timeline">
+                    <div class="phase-item">
+                        <div class="phase-marker">1</div>
+                        <div class="phase-content">
+                            <h4>Deploy Replicate API</h4>
+                            <p>Set up Replicate API infrastructure alongside HuggingFace</p>
+                        </div>
+                    </div>
+                    <div class="phase-item">
+                        <div class="phase-marker">2</div>
+                        <div class="phase-content">
+                            <h4>Set up AWS Infrastructure</h4>
+                            <p>Configure SQS, ElastiCache, S3, and CloudWatch</p>
+                        </div>
+                    </div>
+                    <div class="phase-item">
+                        <div class="phase-marker">3</div>
+                        <div class="phase-content">
+                            <h4>Implement Load Balancer</h4>
+                            <p>Create intelligent routing based on queue depth</p>
+                        </div>
+                    </div>
+                    <div class="phase-item">
+                        <div class="phase-marker">4</div>
+                        <div class="phase-content">
+                            <h4>Create Migration Service</h4>
+                            <p>Build gradual traffic shift mechanism</p>
+                        </div>
+                    </div>
+                    <div class="phase-item">
+                        <div class="phase-marker">5</div>
+                        <div class="phase-content">
+                            <h4>Gradual Traffic Shift</h4>
+                            <p>Migrate traffic: 10% → 50% → 100%</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="migration-timeline">
+                <h3>Phase 2 → Phase 3 Migration (Replicate → Kubernetes)</h3>
+                <div class="phase-timeline">
+                    <div class="phase-item">
+                        <div class="phase-marker">1</div>
+                        <div class="phase-content">
+                            <h4>Infrastructure Planning</h4>
+                            <p>Cost analysis and architecture design</p>
+                        </div>
+                    </div>
+                    <div class="phase-item">
+                        <div class="phase-marker">2</div>
+                        <div class="phase-content">
+                            <h4>Kubernetes Setup</h4>
+                            <p>Deploy EKS cluster and custom models</p>
+                        </div>
+                    </div>
+                    <div class="phase-item">
+                        <div class="phase-marker">3</div>
+                        <div class="phase-content">
+                            <h4>Advanced Features</h4>
+                            <p>Implement auto-scaling and monitoring</p>
+                        </div>
+                    </div>
+                    <div class="phase-item">
+                        <div class="phase-marker">4</div>
+                        <div class="phase-content">
+                            <h4>Load Testing</h4>
+                            <p>Performance testing with production load</p>
+                        </div>
+                    </div>
+                    <div class="phase-item">
+                        <div class="phase-marker">5</div>
+                        <div class="phase-content">
+                            <h4>Zero-Downtime Migration</h4>
+                            <p>Gradual migration with rollback capability</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section" id="recommendations">
+            <h2>🎯 Recommendations by Development Phase</h2>
+
+            <div class="roadmap">
+                <h3>Phase 1 (MVP - September-December 2025)</h3>
+                <div class="phase-timeline">
+                    <div class="phase-item">
+                        <div class="phase-marker">1</div>
+                        <div class="phase-content">
+                            <h4>🏆 PRIMARY RECOMMENDATION: Option 1 - HuggingFace Spaces + Kafka</h4>
+                            <ul class="phase-tasks">
+                                <li>Zero Cost: Fits MVP budget constraints perfectly</li>
+                                <li>Rapid Deployment: 3-5 day setup vs 2-4 weeks for others</li>
+                                <li>Learning Opportunity: Build expertise before scaling</li>
+                                <li>Risk Profile: Acceptable for development/testing phase</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="phase-item">
+                        <div class="phase-marker">2</div>
+                        <div class="phase-content">
+                            <h4>Implementation Priority</h4>
+                            <ul class="phase-tasks">
+                                <li>Week 1: Deploy HuggingFace Spaces with Stable Diffusion XL</li>
+                                <li>Week 2: Set up Kafka routing and Redis caching</li>
+                                <li>Week 3: Integration testing with Crafterse backend</li>
+                                <li>Week 4: Performance monitoring and optimization</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="phase-item">
+                        <div class="phase-marker">3</div>
+                        <div class="phase-content">
+                            <h4>Expected Results</h4>
+                            <ul class="phase-tasks">
+                                <li>Generation Time: 45-120s (acceptable for MVP)</li>
+                                <li>Concurrent Users: 5-10 (sufficient for testing)</li>
+                                <li>Cost: $0.15/month (minimal)</li>
+                                <li>Uptime: 95-98% (acceptable)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="roadmap">
+                <h3>Phase 2 (Expansion - January-March 2026)</h3>
+                <div class="phase-timeline">
+                    <div class="phase-item">
+                        <div class="phase-marker">1</div>
+                        <div class="phase-content">
+                            <h4>🏆 PRIMARY RECOMMENDATION: Option 2 - Replicate API</h4>
+                            <ul class="phase-tasks">
+                                <li>Cost-Benefit: $136/month for 50-100 users (reasonable ROI)</li>
+                                <li>Performance: 15-30s generation (good UX)</li>
+                                <li>Reliability: 99.9% uptime (production-ready)</li>
+                                <li>Scalability: Handles growth to 100 users</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="phase-item">
+                        <div class="phase-marker">2</div>
+                        <div class="phase-content">
+                            <h4>Migration Strategy</h4>
+                            <ul class="phase-tasks">
+                                <li>Deploy alongside existing HuggingFace setup</li>
+                                <li>Gradual migration over 2-4 weeks</li>
+                                <li>Maintain both systems during transition</li>
+                                <li>Cutover when performance metrics are superior</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="roadmap">
+                <h3>Phase 3 (Production - April-June 2026)</h3>
+                <div class="phase-timeline">
+                    <div class="phase-item">
+                        <div class="phase-marker">1</div>
+                        <div class="phase-content">
+                            <h4>🏆 PRIMARY RECOMMENDATION: Option 3 - Kubernetes</h4>
+                            <ul class="phase-tasks">
+                                <li>Performance: 10-25s generation (excellent UX)</li>
+                                <li>Control: Full customization and optimization</li>
+                                <li>Scalability: 200+ concurrent users</li>
+                                <li>Cost Efficiency: Better economics at scale</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="phase-item">
+                        <div class="phase-marker">2</div>
+                        <div class="phase-content">
+                            <h4>Migration Strategy</h4>
+                            <ul class="phase-tasks">
+                                <li>Set up Kubernetes infrastructure in parallel</li>
+                                <li>Deploy custom optimizations and monitoring</li>
+                                <li>Gradual migration with zero downtime</li>
+                                <li>Complete transition when savings >20%</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section" id="technical">
+            <h2>⚙️ Technical Implementation Details</h2>
+
+            <h3>Network Architecture</h3>
+            <div class="diagram">
+                <pre>
+┌─────────────────────────────────────────────────────────────────┐
+│                    Crafterse Game Client                        │
+│  (Web Browser/Mobile App)                                       │
+└─────────────────────────┬───────────────────────────────────────┘
+                          │ HTTP/HTTPS
+                          ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                    Crafterse Backend API                        │
+│  (Handles game logic, user management, authentication)          │
+└─────────────────────────┬───────────────────────────────────────┘
+                          │ gRPC/HTTP
+                          ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                   Image Generation Service                      │
+│                                                                 │
+│  ┌─────────────────┐ ┌─────────────────┐ ┌──────────────────┐   │
+│  │  Kafka Queue    │ │   Redis Cache   │ │  Storage/CDN     │   │
+│  │  (Request       │ │   (Asset        │ │  (CloudFlare R2  │   │
+│  │   Routing)      │ │    Caching)     │ │   + CloudFlare)  │   │
+│  └─────────────────┘ └─────────────────┘ └──────────────────┘   │
+│                                                                 │
+│  ┌────────────────────────────────────────────────────────────┐ │
+│  │                Model Inference Layer                       │ │
+│  │  ┌─────────────────────────────────────────────────────┐   │ │
+│  │  │ Option 1: HuggingFace Spaces (CPU, Free)            │   │ │
+│  │  │ Option 2: Replicate API (GPU, $0.0023/image)        │   │ │
+│  │  │ Option 3: Kubernetes + Custom Models (GPU, Self)    │   │ │
+│  │  │ Option 4: Hybrid Spaces + API Fallback              │   │ │
+│  │  └─────────────────────────────────────────────────────┘   │ │
+│  └────────────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────────┘
+                </pre>
+            </div>
+
+            <h3>Data Flow Architecture</h3>
+            <div class="diagram">
+                <pre>
+User Request → Crafterse Backend → Kafka Queue → Model Inference → Redis Cache → CloudFlare R2/CDN → Response
+
+1. User submits prompt via game UI
+2. Backend validates request and forwards to Kafka
+3. Kafka routes to appropriate inference service
+4. Model generates image (with GPU acceleration where available)
+5. Generated asset cached in Redis
+6. Asset uploaded to CloudFlare R2 and CDN
+7. URL returned to user via backend
+                </pre>
+            </div>
+
+            <h3>Feature Support Matrix</h3>
+            <div class="feature-matrix">
+                <div class="feature-header">Feature</div>
+                <div class="feature-header">Option 1<br>HuggingFace</div>
+                <div class="feature-header">Option 2<br>Replicate</div>
+                <div class="feature-header">Option 3<br>Kubernetes</div>
+                <div class="feature-header">Option 4<br>Hybrid</div>
+
+                <div class="feature-cell">Stable Diffusion XL</div>
+                <div class="feature-cell feature-supported">✅</div>
+                <div class="feature-cell feature-supported">✅</div>
+                <div class="feature-cell feature-supported">✅</div>
+                <div class="feature-cell feature-supported">✅</div>
+
+                <div class="feature-cell">Custom LoRA Models</div>
+                <div class="feature-cell feature-partial">⚠️ Limited</div>
+                <div class="feature-cell feature-unsupported">❌</div>
+                <div class="feature-cell feature-supported">✅</div>
+                <div class="feature-cell feature-partial">⚠️ Partial</div>
+
+                <div class="feature-cell">Batch Processing</div>
+                <div class="feature-cell feature-partial">⚠️ Limited</div>
+                <div class="feature-cell feature-supported">✅</div>
+                <div class="feature-cell feature-supported">✅</div>
+                <div class="feature-cell feature-supported">✅</div>
+
+                <div class="feature-cell">Real-time Streaming</div>
+                <div class="feature-cell feature-unsupported">❌</div>
+                <div class="feature-cell feature-partial">⚠️ Limited</div>
+                <div class="feature-cell feature-supported">✅</div>
+                <div class="feature-cell feature-partial">⚠️ Limited</div>
+
+                <div class="feature-cell">Model Versioning</div>
+                <div class="feature-cell feature-partial">⚠️ Basic</div>
+                <div class="feature-cell feature-unsupported">❌</div>
+                <div class="feature-cell feature-supported">✅</div>
+                <div class="feature-cell feature-partial">⚠️ Basic</div>
+
+                <div class="feature-cell">A/B Testing</div>
+                <div class="feature-cell feature-unsupported">❌</div>
+                <div class="feature-cell feature-unsupported">❌</div>
+                <div class="feature-cell feature-supported">✅</div>
+                <div class="feature-cell feature-partial">⚠️ Limited</div>
+
+                <div class="feature-cell">Custom Endpoints</div>
+                <div class="feature-cell feature-partial">⚠️ Limited</div>
+                <div class="feature-cell feature-unsupported">❌</div>
+                <div class="feature-cell feature-supported">✅</div>
+                <div class="feature-cell feature-partial">⚠️ Limited</div>
+
+                <div class="feature-cell">Multi-GPU Support</div>
+                <div class="feature-cell feature-unsupported">❌</div>
+                <div class="feature-cell feature-supported">✅</div>
+                <div class="feature-cell feature-supported">✅</div>
+                <div class="feature-cell feature-partial">⚠️ Partial</div>
+
+                <div class="feature-cell">Auto-scaling</div>
+                <div class="feature-cell feature-unsupported">❌</div>
+                <div class="feature-cell feature-supported">✅</div>
+                <div class="feature-cell feature-supported">✅</div>
+                <div class="feature-cell feature-partial">⚠️ Manual</div>
+
+                <div class="feature-cell">Advanced Monitoring</div>
+                <div class="feature-cell feature-partial">⚠️ Basic</div>
+                <div class="feature-cell feature-supported">✅</div>
+                <div class="feature-cell feature-supported">✅</div>
+                <div class="feature-cell feature-supported">✅</div>
+
+                <div class="feature-cell">Custom Optimization</div>
+                <div class="feature-cell feature-unsupported">❌</div>
+                <div class="feature-cell feature-unsupported">❌</div>
+                <div class="feature-cell feature-supported">✅</div>
+                <div class="feature-cell feature-partial">⚠️ Limited</div>
+
+                <div class="feature-cell">Cost Optimization</div>
+                <div class="feature-cell feature-supported">✅</div>
+                <div class="feature-cell feature-partial">⚠️ Limited</div>
+                <div class="feature-cell feature-supported">✅</div>
+                <div class="feature-cell feature-supported">✅</div>
+            </div>
+
+        </div>
+
+        <div class="section">
+            <h2>📋 Final Decision Summary</h2>
+
+            <div class="decision-box">
+                <h3>🏆 CHOSEN ARCHITECTURE: Option 1</h3>
+                <div class="metric-grid">
+                    <div class="metric-card">
+                        <div class="metric-value">HuggingFace Spaces + Kafka</div>
+                        <div>Selected Architecture</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">$0</div>
+                        <div>Monthly Cost</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">3-5 days</div>
+                        <div>Deployment Time</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">5-10</div>
+                        <div>Concurrent Users</div>
+                    </div>
+                </div>
+            </div>
+
+            <h3>Decision Rationale</h3>
+            <ul>
+                <li><strong>Budget Alignment:</strong> <span class="success">Zero cost fits MVP constraints perfectly</span></li>
+                <li><strong>Timeline Fit:</strong> <span class="success">3-5 day deployment matches Phase 1 schedule</span></li>
+                <li><strong>Risk Acceptance:</strong> <span class="highlight">Cold starts and rate limits acceptable for development</span></li>
+                <li><strong>Learning Value:</strong> <span class="highlight">Builds internal expertise before scaling</span></li>
+            </ul>
+
+            <h3>Success Metrics for Phase 1</h3>
+            <div class="metric-grid">
+                <div class="metric-card success">
+                    <div class="metric-value"><120s</div>
+                    <div>Average Generation Time</div>
+                </div>
+                <div class="metric-card success">
+                    <div class="metric-value">>95%</div>
+                    <div>Success Rate</div>
+                </div>
+                <div class="metric-card success">
+                    <div class="metric-value"><$0.01</div>
+                    <div>Cost per Image</div>
+                </div>
+                <div class="metric-card success">
+                    <div class="metric-value">5-10</div>
+                    <div>Concurrent Users</div>
+                </div>
+            </div>
+
+            <h3>Migration Triggers</h3>
+            <ul>
+                <li><strong>Performance Trigger:</strong> Average latency >90s for 7 days → Migrate to Option 2</li>
+                <li><strong>Scale Trigger:</strong> >5 concurrent users sustained → Migrate to Option 2</li>
+                <li><strong>Cost Trigger:</strong> Monthly costs >$200 → Migrate to Option 3</li>
+                <li><strong>Feature Trigger:</strong> Need for custom models or GPU acceleration → Migrate to Option 3</li>
+            </ul>
+
+            <h3>Implementation Roadmap</h3>
+            <div class="roadmap">
+                <div class="phase-timeline">
+                    <div class="phase-item">
+                        <div class="phase-marker">1</div>
+                        <div class="phase-content">
+                            <h4>Week 1: Foundation</h4>
+                            <ul class="phase-tasks">
+                                <li>Deploy HuggingFace Spaces with Stable Diffusion XL</li>
+                                <li>Set up basic Kafka queue</li>
+                                <li>Implement Redis caching</li>
+                                <li>Basic integration testing</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="phase-item">
+                        <div class="phase-marker">2</div>
+                        <div class="phase-content">
+                            <h4>Week 2: Enhancement</h4>
+                            <ul class="phase-tasks">
+                                <li>Optimize model loading</li>
+                                <li>Implement request routing</li>
+                                <li>Add error handling</li>
+                                <li>Performance monitoring setup</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="phase-item">
+                        <div class="phase-marker">3</div>
+                        <div class="phase-content">
+                            <h4>Week 3: Integration</h4>
+                            <ul class="phase-tasks">
+                                <li>Full Crafterse backend integration</li>
+                                <li>Load testing</li>
+                                <li>User acceptance testing</li>
+                                <li>Documentation completion</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="phase-item">
+                        <div class="phase-marker">4</div>
+                        <div class="phase-content">
+                            <h4>Week 4: Optimization</h4>
+                            <ul class="phase-tasks">
+                                <li>Performance tuning</li>
+                                <li>Cost optimization</li>
+                                <li>Migration planning</li>
+                                <li>Production readiness</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Smooth scrolling for navigation
+        document.querySelectorAll('nav a').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Add scroll effect to navigation
+        window.addEventListener('scroll', function() {
+            const nav = document.querySelector('nav');
+            if (window.scrollY > 100) {
+                nav.style.boxShadow = '0 2px 10px rgba(0,0,0,0.1)';
+            } else {
+                nav.style.boxShadow = 'none';
+            }
+        });
+
+        // Add loading animation for performance cards
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.performance-card, .architecture-card');
+            cards.forEach((card, index) => {
+                setTimeout(() => {
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+        });
+    </script>
+</body>
+</html>

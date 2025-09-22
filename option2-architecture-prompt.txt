@@ -1,0 +1,107 @@
+# Option 2 Architecture Diagram Prompt - Replicate API + Managed Services
+
+## VISUAL ARCHITECTURE DIAGRAM PROMPT
+
+Create a detailed architectural diagram for "Option 2: Replicate API + Managed Services" with the following specifications:
+
+### MAIN COMPONENTS (Left to Right Flow):
+
+1. **User & API Layer**
+   - Game Client (Web/Mobile)
+   - Load Balancer
+   - Crafterse Backend API
+   - Request Validation & Authentication
+
+2. **Queue & Processing Layer**
+   - AWS SQS Queue System
+   - Request Queuing & Processing
+   - Batch Job Management
+   - Error Handling & Retry Logic
+
+3. **AI Generation Layer**
+   - Replicate API Gateway
+   - GPU-accelerated Model Inference
+   - Stable Diffusion XL Processing
+   - Automatic Model Updates
+   - Usage Monitoring & Billing
+
+4. **Caching & Storage Layer**
+   - AWS ElastiCache (Redis)
+   - Asset Caching & Retrieval
+   - Session Management
+   - Performance Optimization
+
+5. **Delivery & Monitoring Layer**
+   - AWS S3 Storage
+   - CloudFlare CDN Distribution
+   - AWS CloudWatch Monitoring
+   - Performance Metrics & Alerts
+
+### VISUAL ELEMENTS TO INCLUDE:
+
+**🎨 Color Scheme:**
+- Replicate API: Green (#27ae60)
+- AWS Services: Orange (#f39c12)
+- CloudFlare CDN: Blue (#3498db)
+- Monitoring: Gray (#95a5a6)
+- Storage: Purple (#9b59b6)
+- User layer: Cyan (#17a2b8)
+
+**📊 Component Details:**
+- **Replicate API:** "$0.0023/image, GPU acceleration included"
+- **AWS SQS:** "1M requests free tier eligible"
+- **ElastiCache:** "t3.micro instance, 1GB cache, 20GB storage"
+- **S3 Storage:** "Standard tier, 100GB storage, 100K GET requests"
+- **CloudFlare CDN:** "Free tier, 100GB bandwidth"
+- **CloudWatch:** "Free tier: 1M metrics, 100K alarms"
+
+**🔄 Data Flow:**
+1. User submits weapon generation prompt via game interface
+2. Load balancer directs to Crafterse backend API
+3. Backend validates request and authentication
+4. Request queued in AWS SQS for processing
+5. SQS triggers Replicate API model inference
+6. GPU-accelerated Stable Diffusion generates image
+7. Generated asset cached in ElastiCache (Redis)
+8. Asset stored in AWS S3 with lifecycle policies
+9. CloudFlare CDN distributes globally
+10. CloudWatch monitors performance and costs
+11. Success response with asset URL returned to user
+
+**📈 Performance Metrics:**
+- Generation Speed: 15-30s (GPU-accelerated)
+- Throughput: 1,000-2,000 images/hour
+- Premium Tier: 5,000+ images/hour
+- Latency P50: 20s (good user experience)
+- Latency P95: 45s (acceptable for most users)
+- Latency P99: 60s (rare delays)
+- Cost: $91/month (free tier optimized)
+- Uptime: 99.9% (enterprise SLA)
+
+**⚠️ Service Dependencies:**
+- Relies on Replicate API availability
+- Vendor lock-in potential
+- API rate limits and quotas
+- Managed service limitations
+- Cost scaling with usage
+
+**🎯 Key Benefits to Highlight:**
+- ✅ GPU acceleration without infrastructure management
+- ✅ Managed services (no DevOps overhead)
+- ✅ 99.9% uptime SLA guarantee
+- ✅ Automatic scaling and load balancing
+- ✅ Enterprise-grade monitoring included
+- ✅ Rapid deployment and updates
+- ✅ Cost-effective for moderate usage
+
+### STYLE REQUIREMENTS:
+- Clean, managed-service design
+- Clear service boundaries and data flow
+- Component specifications visible
+- Performance metrics prominently displayed
+- Cost information highlighted
+- Professional color scheme
+- Suitable for technical and business audiences
+
+### OUTPUT FORMAT:
+PNG/SVG diagram suitable for technical documentation, with clear labels and professional appearance showing the complete managed services architecture with Replicate API integration.

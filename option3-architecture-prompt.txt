@@ -1,0 +1,107 @@
+# Option 3 Architecture Diagram Prompt - Custom Kubernetes Deployment
+
+## VISUAL ARCHITECTURE DIAGRAM PROMPT
+
+Create a detailed architectural diagram for "Option 3: Custom Kubernetes Deployment" with the following specifications:
+
+### MAIN COMPONENTS (Left to Right Flow):
+
+1. **User & API Layer**
+   - Game Client (Web/Mobile)
+   - Load Balancer (AWS ALB)
+   - Crafterse Backend API
+   - Authentication & Rate Limiting
+
+2. **Kubernetes Cluster Layer**
+   - EKS Control Plane
+   - Worker Nodes (2x t3.medium)
+   - GPU Node (1x g4dn.xlarge with T4 GPU)
+   - Auto-scaling Configuration
+
+3. **AI Processing Layer**
+   - Custom Stable Diffusion Pods
+   - GPU-accelerated inference
+   - Model optimization layer
+   - Batch processing queues
+
+4. **Message Queue Layer**
+   - Apache Kafka Cluster (2x brokers)
+   - High-throughput processing
+   - Topic-based routing
+   - Message persistence
+
+5. **Data & Monitoring Layer**
+   - Redis Cluster (Multi-AZ)
+   - Persistent storage (EBS gp3)
+   - Prometheus monitoring
+   - Grafana dashboards
+   - AlertManager notifications
+
+### VISUAL ELEMENTS TO INCLUDE:
+
+**🎨 Color Scheme:**
+- Kubernetes cluster: Blue (#3498db)
+- GPU processing: Green (#27ae60)
+- Kafka streaming: Orange (#f39c12)
+- Storage layer: Purple (#9b59b6)
+- Monitoring: Gray (#95a5a6)
+- Load balancers: Cyan (#17a2b8)
+
+**📊 Component Details:**
+- **EKS Cluster:** "2x t3.medium nodes, auto-scaling enabled"
+- **GPU Node:** "g4dn.xlarge, T4 GPU, 16GB memory"
+- **Kafka Cluster:** "2x t3.small brokers, high-throughput"
+- **Redis Cluster:** "t3.small x2, replication enabled"
+- **Storage:** "EBS gp3, 3,000 IOPS, 125MB/s throughput"
+- **Monitoring:** "Prometheus + Grafana + AlertManager"
+
+**🔄 Data Flow:**
+1. User submits weapon generation request via game client
+2. Load balancer distributes to Crafterse backend API
+3. API validates request and forwards to Kubernetes service
+4. Kubernetes routes to appropriate GPU-enabled pods
+5. Custom Stable Diffusion processes image generation
+6. Kafka handles batch processing and result queuing
+7. Redis caches generated assets for fast retrieval
+8. Persistent storage saves assets to EBS volumes
+9. Prometheus monitors performance and health
+10. Grafana displays real-time metrics and dashboards
+11. Asset delivered via CDN with monitoring alerts
+
+**📈 Performance Metrics:**
+- Generation Speed: 10-25s (GPU-optimized)
+- Throughput: 500-1,000 images/hour (single GPU)
+- Multi-GPU: 5,000+ images/hour potential
+- Latency P50: 15s (excellent performance)
+- Latency P95: 30s (good reliability)
+- Latency P99: 45s (consistent performance)
+- Cost: $435/month (optimized)
+- Uptime: 99.5% (high availability)
+
+**⚠️ Complexity Indicators:**
+- Self-managed Kubernetes cluster
+- Custom GPU pod configurations
+- Multi-service orchestration
+- Advanced monitoring stack
+- CI/CD pipeline integration
+
+**🎯 Key Benefits to Highlight:**
+- ✅ Full control over infrastructure
+- ✅ GPU acceleration for fast processing
+- ✅ Auto-scaling capabilities
+- ✅ Custom optimizations possible
+- ✅ Enterprise-grade monitoring
+- ✅ Production-ready architecture
+- ✅ High performance and reliability
+
+### STYLE REQUIREMENTS:
+- Clean, enterprise-grade design
+- Clear service boundaries and interactions
+- Component specifications visible
+- Performance metrics displayed prominently
+- Security boundaries indicated
+- Professional color scheme
+- Suitable for technical documentation and presentations
+
+### OUTPUT FORMAT:
+PNG/SVG diagram suitable for technical documentation, with clear labels and professional appearance showing the complete custom Kubernetes deployment architecture.
